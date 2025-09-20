@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, status
 
 from .. import models
-from ..services import archive_url, get_base_url
+from .. import services
 
 router = APIRouter(prefix="/api/urls", tags=["shorten"])
 
@@ -31,14 +31,14 @@ def create_short_link(payload: models.ShortenRequest) -> models.ShortenResponse:
     """
     try:
         # Archive and create record
-        rec = archive_url(str(payload.url), note=payload.note)
+        rec = services.archive_url(str(payload.url), note=payload.note)
     except ValueError as ve:
         # Validation or security failures
         raise HTTPException(status_code=400, detail=str(ve)) from ve
     except Exception as ex:
         raise HTTPException(status_code=400, detail="Archival failed") from ex
 
-    base = get_base_url().rstrip("/")
+    base = services.get_base_url().rstrip("/")
     # Return plain strings; response model will validate as URLs
     short_url_str = f"{base}/r/{rec['code']}"
     original_url_str = rec["original_url"]
