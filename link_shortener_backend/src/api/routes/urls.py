@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, status
-from pydantic import AnyHttpUrl
 
 from .. import models
 from ..services import archive_url, get_base_url
@@ -40,13 +39,15 @@ def create_short_link(payload: models.ShortenRequest) -> models.ShortenResponse:
         raise HTTPException(status_code=400, detail="Archival failed") from ex
 
     base = get_base_url().rstrip("/")
-    short_url: AnyHttpUrl = AnyHttpUrl(f"{base}/r/{rec['code']}")  # type: ignore
+    # Return plain strings; response model will validate as URLs
+    short_url_str = f"{base}/r/{rec['code']}"
+    original_url_str = rec["original_url"]
 
     # Build response
     return models.ShortenResponse(
         id=rec["id"],
         code=rec["code"],
-        short_url=short_url,
-        original_url=AnyHttpUrl(rec["original_url"]),  # type: ignore
+        short_url=short_url_str,
+        original_url=original_url_str,
         archived_at=datetime.fromisoformat(rec["archived_at"]),
     )
