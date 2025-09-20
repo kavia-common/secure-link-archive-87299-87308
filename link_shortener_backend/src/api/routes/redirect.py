@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response, status
 from fastapi.responses import HTMLResponse
 
-from ..services import get_record_by_code, get_archived_content
+from .. import services
 
 router = APIRouter(tags=["redirect"])
 
@@ -27,11 +27,11 @@ def redirect_with_header(code: str) -> Response:
     Returns:
     - HTML page embedding archived content and header assets references.
     """
-    rec = get_record_by_code(code)
+    rec = services.get_record_by_code(code)
     if not rec:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 
-    archived = get_archived_content(code)
+    archived = services.get_archived_content(code)
     if archived is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Archive missing")
 

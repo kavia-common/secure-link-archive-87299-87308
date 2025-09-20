@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from .. import models
-from ..services import get_record_by_code, compare_current_vs_archived
+from .. import services
 
 router = APIRouter(prefix="/api/compare", tags=["compare"])
 
@@ -27,12 +27,12 @@ def compare(code: str) -> models.CompareResponse:
     Returns:
     - CompareResponse with change flags and summaries.
     """
-    rec = get_record_by_code(code)
+    rec = services.get_record_by_code(code)
     if not rec:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 
     try:
-        has_changes, summary, details = compare_current_vs_archived(code)
+        has_changes, summary, details = services.compare_current_vs_archived(code)
     except Exception as ex:
         # If comparison fails unexpectedly, return 400 to align with spec (tests tolerate 500/200 too)
         raise HTTPException(status_code=400, detail="Comparison failed") from ex
